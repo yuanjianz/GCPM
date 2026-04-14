@@ -1,6 +1,6 @@
-# GCPM: GEOS-Chem PM2.5 Calculator
+# GCPM: GEOS-Chem PM<sub>2.5</sub> Calculator
 
-GCPM calculates fine particulate matter (PM2.5) mass concentrations from GEOS-Chem chemical transport model output. It converts species volume mixing ratios (VMR) to mass concentrations in micrograms per cubic meter (ug/m3) and aggregates them into PM2.5 components.
+GCPM calculates fine particulate matter (PM<sub>2.5</sub>) mass concentrations from GEOS-Chem chemical transport model output. It converts species volume mixing ratios (VMR) to mass concentrations in micrograms per cubic meter (μg/m<sup>3</sup>) and aggregates them into PM<sub>2.5</sub> components.
 
 ## Usage
 
@@ -12,7 +12,7 @@ pm25 = calculator.calculate_mass('PM25')  # total PM2.5 (wet)
 ```
 
 `calculate_mass` accepts a single name or a list, and returns an `xarray.Dataset`
-whose variables are prefixed `AeroMassFine_*` (units: ug/m3).
+whose variables are prefixed `AeroMassFine_*` (units: μg/m<sup>3</sup>).
 
 ```python
 # Individual species and common groups
@@ -56,7 +56,7 @@ calculator = AerosolCalculator(
 
 The `AeroMassFine(ds, spcs, dry=False, **kwargs)` wrapper is maintained for backward compatibility. Extra keyword arguments are forwarded to `AerosolCalculator`.
 
-## PM2.5 Calculation Method
+## PM<sub>2.5</sub> Calculation Method
 
 ### Volume Mixing Ratio to Mass Concentration
 
@@ -108,7 +108,7 @@ OM/OC ratios can be overridden at runtime via the `omoc_ratios` parameter (spati
 
 ## Species Categories
 
-PM2.5 is the sum of the following component categories:
+PM<sub>2.5</sub> is the sum of the following component categories:
 
 ### Secondary Inorganic Aerosol (SIA)
 - **NIT** — Nitrate (MW 62.01)
@@ -128,7 +128,7 @@ OA = POA (Primary Organic Aerosol) + SOA (Secondary Organic Aerosol). The specif
 - **SALA** — Accumulation-mode sea salt (MW 31.4)
 
 ### Mineral Dust
-Species depend on the dust scheme. Only fine-mode bins are included in PM2.5 (see PM2.5 Size Cuts below).
+Species depend on the dust scheme. Only fine-mode bins are included in PM<sub>2.5</sub> (see PM<sub>2.5</sub> Size Cuts below).
 
 ## Scheme Variants
 
@@ -154,26 +154,26 @@ Auto-detection: if `SpeciesConcVV_POA1` is present, uses `SVPOA`; if `SpeciesCon
 
 ### Dust Schemes
 
-| Scheme | PM2.5 Bins | Excluded (coarse) | Description |
+| Scheme | PM<sub>2.5</sub> Bins | Excluded (coarse) | Description |
 |--------|-----------|-------------------|-------------|
 | **DEAD** | DST1, DST2 (x0.3) | DST3, DST4 | 4-bin DEAD dust scheme |
 | **L23** | DSTbin1, DSTbin2, DSTbin3, DSTbin4 (x0.546) | DSTbin5, DSTbin6, DSTbin7 | 7-bin Kok et al. (L23) dust scheme |
 
 Auto-detection: if `SpeciesConcVV_DSTbin1` is present, uses `L23`; otherwise uses `DEAD`.
 
-## PM2.5 Size Cuts for Dust
+## PM<sub>2.5</sub> Size Cuts for Dust
 
-Not all dust size bins fall within the PM2.5 diameter cutoff (2.5 um aerodynamic diameter):
+Not all dust size bins fall within the PM<sub>2.5</sub> diameter cutoff (2.5 μm aerodynamic diameter):
 
 **DEAD scheme (DST1-4):**
-- DST1: Fully within PM2.5 (fraction = 1.0)
-- DST2: Straddles the 2.5 um cutoff; **30%** of mass is PM2.5
-- DST3, DST4: Entirely coarse, excluded from PM2.5
+- DST1: Fully within PM<sub>2.5</sub> (fraction = 1.0)
+- DST2: Straddles the 2.5 μm cutoff; **30%** of mass is PM<sub>2.5</sub>
+- DST3, DST4: Entirely coarse, excluded from PM<sub>2.5</sub>
 
 **L23 scheme (DSTbin1-7):**
-- DSTbin1-3: Fully within PM2.5 (fraction = 1.0)
-- DSTbin4: Straddles the 2.5 um cutoff; **54.6%** of mass is PM2.5
-- DSTbin5-7: Entirely coarse, excluded from PM2.5
+- DSTbin1-3: Fully within PM<sub>2.5</sub> (fraction = 1.0)
+- DSTbin4: Straddles the 2.5 μm cutoff; **54.6%** of mass is PM<sub>2.5</sub>
+- DSTbin5-7: Entirely coarse, excluded from PM<sub>2.5</sub>
 
 ## Optional Species
 
@@ -182,19 +182,19 @@ Two species have debatable classification and are **excluded by default**. Their
 ### HMS (Hydroxymethanesulfonate)
 - **Flag:** `include_hms` (default: `False`)
 - **Category if included:** SIA
-- HMS is formed from the aqueous-phase reaction of formaldehyde with sulfite/bisulfite. Whether it should be classified as PM2.5 depends on the analysis context — it is a real aerosol-phase species but is not always reported in observational PM2.5 measurements.
+- HMS is formed from the aqueous-phase reaction of formaldehyde with sulfite/bisulfite. Whether it should be classified as PM<sub>2.5</sub> depends on the analysis context — it is a real aerosol-phase species but is not always reported in observational PM<sub>2.5</sub> measurements.
 
 ### INDIOL (Hydrolysis product of organonitrate)
 - **Flag:** `include_indiol` (default: `False`)
 - **Category if included:** SOA (complex scheme only)
 - INDIOL represents the hydrolysis product of aerosol-form organonitrate, e.g., AONITA, IONITA and MONITA. It can easily takes >50% of total SOA and it should be seen as an overestimation.
-> Kelvin Bates (Email, 2026): There is still the issue of whether to include INDIOL at all as a species in PM2.5 or not. I think we do this species wrong in GEOS-Chem, because in reality, while it's true that most of the INDIOL from monoterpenes (MONITA --> INDIOL) would stay in the aerosol phase as a non-nitrate component of PM2.5, most of the INDIOL from isoprene (IONITA --> INDIOL) would come back out of the aerosol into the gas phase. Once it's lost its nitrate group, isoprene-derived INDIOL represents 1,2-dihydroxyisoprene and is a pretty volatile compound. I actually measured the oxidation rates and products of that compound a few years ago (here) and made a mechanism for it to go in GEOS-Chem (in the supplement of this paper, where I called it "IDIOL" to differentiate it from "INDIOL"), but that never made it into the standard version. So I think the ideal way to handle this would be to split up GEOS-Chem's current "INDIOL" into one monoterpene-derived compound that *does* get counted as PM2.5, and one isoprene-derived compound that goes on to do some gas-phase chemistry... we're just not quite there yet. 
-> So in summary... tough to know whether or not to include INDIOL as it is now into PM2.5. I would lean towards yes, and know that it likely overestimates isoprene-derived organic aerosol. But it'd also be defensible not to.
+> Kelvin Bates (Email, 2026): There is still the issue of whether to include INDIOL at all as a species in PM<sub>2.5</sub> or not. I think we do this species wrong in GEOS-Chem, because in reality, while it's true that most of the INDIOL from monoterpenes (MONITA --> INDIOL) would stay in the aerosol phase as a non-nitrate component of PM<sub>2.5</sub>, most of the INDIOL from isoprene (IONITA --> INDIOL) would come back out of the aerosol into the gas phase. Once it's lost its nitrate group, isoprene-derived INDIOL represents 1,2-dihydroxyisoprene and is a pretty volatile compound. I actually measured the oxidation rates and products of that compound a few years ago (here) and made a mechanism for it to go in GEOS-Chem (in the supplement of this paper, where I called it "IDIOL" to differentiate it from "INDIOL"), but that never made it into the standard version. So I think the ideal way to handle this would be to split up GEOS-Chem's current "INDIOL" into one monoterpene-derived compound that *does* get counted as PM<sub>2.5</sub>, and one isoprene-derived compound that goes on to do some gas-phase chemistry... we're just not quite there yet. 
+> So in summary... tough to know whether or not to include INDIOL as it is now into PM<sub>2.5</sub>. I would lean towards yes, and know that it likely overestimates isoprene-derived organic aerosol. But it'd also be defensible not to.
 
 ## ALT1 Scenario (Surface Diagnostic)
 
 GEOS-Chem can output `SpeciesConcALT1_*` fields, which represent species concentration at a given height (here 2M) calculated through dry deposition for **secondary aerosol species only** (SIA, SOA and SVPOA).
-> Reasons that only secondary aerosol is available are that primary aerosol can have an emission flux from the ground, whereas secondary aerosol better fulfils the dry deposition model assumption.
+> Reasons that only secondary aerosol is available are that primary aerosol can have an emission flux from the ground, whereas secondary aerosol better fulfilss the dry deposition model assumption.
 
 These are used transparently in the `SIA`, `SOA`, and (SVPOA) `POA` composites — and therefore in `PM25` — when `use_alt` is true:
 
