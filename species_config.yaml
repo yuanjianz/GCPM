@@ -1,0 +1,441 @@
+# =============================================================================
+# GCPM Species Configuration
+# =============================================================================
+#
+# This file defines all aerosol species used in PM2.5 calculations from
+# GEOS-Chem output. Each species carries attributes that drive the calculation
+# pipeline in GCPM.py.
+#
+# --- Attribute Reference ---
+#
+#   mw:           Molecular weight (g/mol). Used in the ideal gas law conversion
+#                 from volume mixing ratio (VMR) to mass concentration (ug/m3).
+#
+#   category:     Aerosol category for PM2.5 composition.
+#                   SIA   - Secondary Inorganic Aerosol (NIT, SO4, NH4)
+#                   POA   - Primary Organic Aerosol
+#                   SOA   - Secondary Organic Aerosol
+#                   BC    - Black Carbon
+#                   SS    - Sea Salt
+#                   Dust  - Mineral Dust
+#
+#   growth_group: Which hygroscopic growth factor to apply (wet mode only).
+#                   SIA  -> 1.042 (default)
+#                   ORG  -> 1.011 (default)
+#                   SS   -> 1.17  (default)
+#                   null -> no growth factor applied (BC, Dust)
+#
+#   omoc:         Organic-matter-to-organic-carbon ratio. Applied to OA species
+#                 whose mass is reported as carbon mass. null if not applicable.
+#                   1.4 for non-volatile POA (POA1/2 in SVPOA; OCPO in NVPOA)
+#                   2.1 for semi-volatile/oxidized POA (OPOA1/2 in SVPOA; OCPI in NVPOA)
+#
+#   dust_frac:    PM2.5 mass fraction for dust bins that straddle the 2.5 um
+#                 cutoff. null means the full bin is included (fine) or the
+#                 species is not dust.
+#
+#   scheme:       Which model configuration scheme this species belongs to.
+#                 Species with scheme=null are always included regardless of
+#                 scheme selection.
+#                   poa_scheme:  SVPOA | NVPOA
+#                   soa_scheme:  complex | simple
+#                   dust_scheme: DEAD | L23
+#
+#   include_if:   Optional toggle flag name. If set, the species is only
+#                 included when that flag is True in the calculator config.
+#                 Used for species whose inclusion is debatable.
+#
+#   alt1:         Whether an ALT1 (surface-level diagnostic) variant exists
+#                 for this species. ALT1 is used for secondary aerosol only.
+#
+# --- Category Membership Summary ---
+#
+#   SIA:  NIT, SO4, NH4, (HMS if include_hms=True)
+#   POA (SVPOA): POA1, POA2, OPOA1, OPOA2
+#   POA (NVPOA): OCPI, OCPO
+#   SOA (complex): ASOA1-3, ASOAN, TSOA0-3, SOAIE, SOAGX, LVOCOA,
+#                   (INDIOL if include_indiol=True)
+#   SOA (simple): SOAS
+#   BC:   BCPI, BCPO
+#   SS:   SALA
+#   Dust (DEAD): DST1, DST2
+#   Dust (L23):  DSTbin1, DSTbin2, DSTbin3, DSTbin4
+#
+# =============================================================================
+
+# --- Default constants (can be overridden at runtime) ---
+defaults:
+  growth_factors:
+    SIA: 1.042
+    ORG: 1.011
+    SS: 1.17
+  omoc_ratios:
+    POA: 1.4
+    OPOA: 2.1
+  standard_conditions:
+    T: 298        # K
+    P: 101325     # Pa
+    R: 8.314      # J/(mol*K)
+
+# --- Species definitions ---
+species:
+
+  # ---- Secondary Inorganic Aerosol (SIA) ----
+  NIT:
+    mw: 62.01
+    category: SIA
+    growth_group: SIA
+    omoc: null
+    dust_frac: null
+    scheme: null
+    include_if: null
+    alt1: true
+
+  SO4:
+    mw: 96.06
+    category: SIA
+    growth_group: SIA
+    omoc: null
+    dust_frac: null
+    scheme: null
+    include_if: null
+    alt1: true
+
+  NH4:
+    mw: 18.05
+    category: SIA
+    growth_group: SIA
+    omoc: null
+    dust_frac: null
+    scheme: null
+    include_if: null
+    alt1: true
+
+  HMS:
+    mw: 111.1
+    category: SIA
+    growth_group: SIA
+    omoc: null
+    dust_frac: null
+    scheme: null
+    include_if: include_hms
+    alt1: true
+
+  # ---- POA (SVPOA scheme) ----
+  POA1:
+    mw: 12.01
+    category: POA
+    growth_group: ORG
+    omoc: 1.4
+    dust_frac: null
+    scheme:
+      poa_scheme: SVPOA
+    include_if: null
+    alt1: true
+
+  POA2:
+    mw: 12.01
+    category: POA
+    growth_group: ORG
+    omoc: 1.4
+    dust_frac: null
+    scheme:
+      poa_scheme: SVPOA
+    include_if: null
+    alt1: true
+
+  OPOA1:
+    mw: 12.01
+    category: POA
+    growth_group: ORG
+    omoc: 2.1
+    dust_frac: null
+    scheme:
+      poa_scheme: SVPOA
+    include_if: null
+    alt1: true
+
+  OPOA2:
+    mw: 12.01
+    category: POA
+    growth_group: ORG
+    omoc: 2.1
+    dust_frac: null
+    scheme:
+      poa_scheme: SVPOA
+    include_if: null
+    alt1: true
+
+  # ---- POA (NVPOA scheme) ----
+  OCPI:
+    mw: 12.01
+    category: POA
+    growth_group: ORG
+    omoc: 2.1
+    dust_frac: null
+    scheme:
+      poa_scheme: NVPOA
+    include_if: null
+    alt1: false
+
+  OCPO:
+    mw: 12.01
+    category: POA
+    growth_group: null
+    omoc: 1.4
+    dust_frac: null
+    scheme:
+      poa_scheme: NVPOA
+    include_if: null
+    alt1: false
+
+  # ---- SOA (complex scheme) ----
+  ASOA1:
+    mw: 150.0
+    category: SOA
+    growth_group: ORG
+    omoc: null
+    dust_frac: null
+    scheme:
+      soa_scheme: complex
+    include_if: null
+    alt1: true
+
+  ASOA2:
+    mw: 150.0
+    category: SOA
+    growth_group: ORG
+    omoc: null
+    dust_frac: null
+    scheme:
+      soa_scheme: complex
+    include_if: null
+    alt1: true
+
+  ASOA3:
+    mw: 150.0
+    category: SOA
+    growth_group: ORG
+    omoc: null
+    dust_frac: null
+    scheme:
+      soa_scheme: complex
+    include_if: null
+    alt1: true
+
+  ASOAN:
+    mw: 150.0
+    category: SOA
+    growth_group: ORG
+    omoc: null
+    dust_frac: null
+    scheme:
+      soa_scheme: complex
+    include_if: null
+    alt1: true
+
+  TSOA0:
+    mw: 150.0
+    category: SOA
+    growth_group: ORG
+    omoc: null
+    dust_frac: null
+    scheme:
+      soa_scheme: complex
+    include_if: null
+    alt1: true
+
+  TSOA1:
+    mw: 150.0
+    category: SOA
+    growth_group: ORG
+    omoc: null
+    dust_frac: null
+    scheme:
+      soa_scheme: complex
+    include_if: null
+    alt1: true
+
+  TSOA2:
+    mw: 150.0
+    category: SOA
+    growth_group: ORG
+    omoc: null
+    dust_frac: null
+    scheme:
+      soa_scheme: complex
+    include_if: null
+    alt1: true
+
+  TSOA3:
+    mw: 150.0
+    category: SOA
+    growth_group: ORG
+    omoc: null
+    dust_frac: null
+    scheme:
+      soa_scheme: complex
+    include_if: null
+    alt1: true
+
+  SOAIE:
+    mw: 118.15
+    category: SOA
+    growth_group: ORG
+    omoc: null
+    dust_frac: null
+    scheme:
+      soa_scheme: complex
+    include_if: null
+    alt1: true
+
+  SOAGX:
+    mw: 58.04
+    category: SOA
+    growth_group: ORG
+    omoc: null
+    dust_frac: null
+    scheme:
+      soa_scheme: complex
+    include_if: null
+    alt1: true
+
+  LVOCOA:
+    mw: 154.19
+    category: SOA
+    growth_group: ORG
+    omoc: null
+    dust_frac: null
+    scheme:
+      soa_scheme: complex
+    include_if: null
+    alt1: true
+
+  INDIOL:
+    mw: 102.0
+    category: SOA
+    growth_group: null
+    omoc: null
+    dust_frac: null
+    scheme:
+      soa_scheme: complex
+    include_if: include_indiol
+    alt1: true
+
+  # ---- SOA (simple scheme) ----
+  SOAS:
+    mw: 150.0
+    category: SOA
+    growth_group: ORG
+    omoc: null
+    dust_frac: null
+    scheme:
+      soa_scheme: simple
+    include_if: null
+    alt1: true
+
+  # ---- Black Carbon ----
+  BCPI:
+    mw: 12.01
+    category: BC
+    growth_group: null
+    omoc: null
+    dust_frac: null
+    scheme: null
+    include_if: null
+    alt1: false
+
+  BCPO:
+    mw: 12.01
+    category: BC
+    growth_group: null
+    omoc: null
+    dust_frac: null
+    scheme: null
+    include_if: null
+    alt1: false
+
+  # ---- Sea Salt ----
+  SALA:
+    mw: 31.4
+    category: SS
+    growth_group: SS
+    omoc: null
+    dust_frac: null
+    scheme: null
+    include_if: null
+    alt1: false
+
+  # ---- Dust (DEAD scheme: DST1-4) ----
+  # DST1: fine mode, fully within PM2.5
+  # DST2: straddles the 2.5 um cutoff; 30% of mass is PM2.5
+  # DST3, DST4: coarse mode, excluded from PM2.5
+  DST1:
+    mw: 29.0
+    category: Dust
+    growth_group: null
+    omoc: null
+    dust_frac: null
+    scheme:
+      dust_scheme: DEAD
+    include_if: null
+    alt1: false
+
+  DST2:
+    mw: 29.0
+    category: Dust
+    growth_group: null
+    omoc: null
+    dust_frac: 0.3
+    scheme:
+      dust_scheme: DEAD
+    include_if: null
+    alt1: false
+
+  # ---- Dust (L23 scheme: DSTbin1-7) ----
+  # DSTbin1-3: fine mode, fully within PM2.5
+  # DSTbin4: straddles the 2.5 um cutoff; 54.6% of mass is PM2.5
+  # DSTbin5-7: coarse mode, excluded from PM2.5
+  DSTbin1:
+    mw: 29.0
+    category: Dust
+    growth_group: null
+    omoc: null
+    dust_frac: null
+    scheme:
+      dust_scheme: L23
+    include_if: null
+    alt1: false
+
+  DSTbin2:
+    mw: 29.0
+    category: Dust
+    growth_group: null
+    omoc: null
+    dust_frac: null
+    scheme:
+      dust_scheme: L23
+    include_if: null
+    alt1: false
+
+  DSTbin3:
+    mw: 29.0
+    category: Dust
+    growth_group: null
+    omoc: null
+    dust_frac: null
+    scheme:
+      dust_scheme: L23
+    include_if: null
+    alt1: false
+
+  DSTbin4:
+    mw: 29.0
+    category: Dust
+    growth_group: null
+    omoc: null
+    dust_frac: 0.546
+    scheme:
+      dust_scheme: L23
+    include_if: null
+    alt1: false
