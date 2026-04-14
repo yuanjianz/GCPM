@@ -2,6 +2,60 @@
 
 GCPM calculates fine particulate matter (PM2.5) mass concentrations from GEOS-Chem chemical transport model output. It converts species volume mixing ratios (VMR) to mass concentrations in micrograms per cubic meter (ug/m3) and aggregates them into PM2.5 components.
 
+## Usage
+
+```python
+from GCPM import AerosolCalculator
+
+calculator = AerosolCalculator(ds)        # schemes auto-detected from ds
+pm25 = calculator.calculate_mass('PM25')  # total PM2.5 (wet)
+```
+
+`calculate_mass` accepts a single name or a list, and returns an `xarray.Dataset`
+whose variables are prefixed `AeroMassFine_*` (units: ug/m3).
+
+```python
+# Individual species and common groups
+out = calculator.calculate_mass(['SO4', 'SIA', 'POA', 'SOA', 'BC', 'Dust', 'SS'])
+
+# Dry (no hygroscopic growth) — dry is a runtime option, not a constructor flag
+pm25_dry = calculator.calculate_mass('PM25', dry=True)
+
+# Explicit scheme overrides (skip auto-detection); opt into HMS / INDIOL
+calculator = AerosolCalculator(
+    ds,
+    poa_scheme='SVPOA', soa_scheme='complex', dust_scheme='DEAD',
+    use_alt=True,
+    include_hms=True, include_indiol=True,
+)
+```
+
+## Configuration Reference
+
+### species_config.yaml
+
+All species definitions, molecular weights, category assignments, scheme memberships, and default constants are stored in `species_config.yaml`. See the header comments in that file for the full attribute reference.
+
+### AerosolCalculator Parameters
+
+```python
+calculator = AerosolCalculator(
+    ds,                          # xarray Dataset read from GEOS-Chem diagnostic
+    poa_scheme="auto",           # "auto" | "SVPOA" | "NVPOA"
+    soa_scheme="auto",           # "auto" | "simple" | "complex"
+    dust_scheme="auto",          # "auto" | "DEAD" | "L23"
+    use_alt="auto",              # "auto" | True | False
+    include_hms=False,           # Include HMS in SIA
+    include_indiol=False,        # Include INDIOL in SOA
+    growth_factors=None,         # Override dict, e.g. {"SIA": 1.05, "ORG": 1.02, "SS": 1.2}
+    omoc_ratios=None,            # Override dict, e.g. {"POA": 1.6, "OPOA": 2.3}
+)
+```
+
+### Legacy API
+
+The `AeroMassFine(ds, spcs, dry=False, **kwargs)` wrapper is maintained for backward compatibility. Extra keyword arguments are forwarded to `AerosolCalculator`.
+
 ## PM2.5 Calculation Method
 
 ### Volume Mixing Ratio to Mass Concentration
@@ -142,10 +196,10 @@ Two species have debatable classification and are **excluded by default**. Their
 GEOS-Chem can output `SpeciesConcALT1_*` fields, which represent species concentration at a given height (here 2M) calculated through dry deposition for **secondary aerosol species only** (SIA, SOA and SVPOA).
 > Reasons that only secondary aerosol is available are that primary aerosol can have an emission flux from the ground, whereas secondary aerosol better fulfils the dry deposition model assumption.
 
-These are used in the `PM25_S2M` composite calculation, where:
+These are used transparently in the `SIA`, `SOA`, and (SVPOA) `POA` composites — and therefore in `PM25` — when `use_alt` is true:
 
-- SIA and SOA use ALT1 fields (surface diagnostic)
-- BC, Dust, and Sea Salt use standard `SpeciesConcVV_*` fields
+- SIA, SOA, and SVPOA POA members read ALT1 fields where `alt1: true` in `species_config.yaml`
+- BC, Dust, Sea Salt, and NVPOA POA read standard `SpeciesConcVV_*` fields
 
 The `use_alt` parameter controls ALT1 usage:
 - `"auto"` (default): detect from dataset variables
@@ -162,30 +216,3 @@ WL1 here represents wavelength at 550 nm
 - `AODHygWL1_SALA` — fine sea salt AOD
 - `AODHygWL1_SALC` — coarse sea salt AOD
 - `AODHygWL1_OCPI` or `AODHygWL1_POA1` — organic aerosol AOD (scheme-dependent)
-
-## Configuration Reference
-
-### species_config.yaml
-
-All species definitions, molecular weights, category assignments, scheme memberships, and default constants are stored in `species_config.yaml`. See the header comments in that file for the full attribute reference.
-
-### AerosolCalculator Parameters
-
-```python
-calculator = AerosolCalculator(
-    ds,                          # xarray Dataset from GEOS-Chem
-    dry=False,                   # True for dry mass, False for wet (with growth factors)
-    poa_scheme="auto",           # "auto" | "SVPOA" | "NVPOA"
-    soa_scheme="auto",           # "auto" | "simple" | "complex"
-    dust_scheme="auto",          # "auto" | "DEAD" | "L23"
-    use_alt="auto",              # "auto" | True | False
-    include_hms=False,           # Include HMS in SIA
-    include_indiol=False,        # Include INDIOL in SOA
-    growth_factors=None,         # Override dict, e.g. {"SIA": 1.05, "ORG": 1.02, "SS": 1.2}
-    omoc_ratios=None,            # Override dict, e.g. {"POA": 1.6, "OPOA": 2.3}
-)
-```
-
-### Legacy API
-
-The `AeroMassFine(ds, spcs, dry=False)` wrapper function is maintained for backward compatibility with existing scripts.
