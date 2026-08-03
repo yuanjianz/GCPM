@@ -34,6 +34,12 @@
 #                 cutoff. null means the full bin is included (fine) or the
 #                 species is not dust.
 #
+#   dust_frac_pm1: Same as dust_frac but for the PM1 (1 um) size cut, used by
+#                 the Dust_PM1 composite. null = full bin (1.0); a number =
+#                 partial fraction; 0.0 = excluded from PM1.
+#                   DEAD: DST1 = 0.06 (DST2 excluded)
+#                   L23:  DSTbin1 = DSTbin2 = 1.0, DSTbin3 = 0.073 (DSTbin4 excluded)
+#
 #   scheme:       Which model configuration scheme this species belongs to.
 #                 Species with scheme=null are always included regardless of
 #                 scheme selection.
@@ -367,8 +373,8 @@ species:
     alt1: false
 
   # ---- Dust (DEAD scheme: DST1-4) ----
-  # DST1: fine mode, fully within PM2.5
-  # DST2: straddles the 2.5 um cutoff; 30% of mass is PM2.5
+  # DST1: fine mode; PM2.5 fraction 1.0, PM1 fraction 0.06
+  # DST2: straddles the 2.5 um cutoff; 30% of mass is PM2.5, excluded from PM1
   # DST3, DST4: coarse mode, excluded from PM2.5
   DST1:
     mw: 29.0
@@ -395,8 +401,9 @@ species:
     alt1: false
 
   # ---- Dust (L23 scheme: DSTbin1-7) ----
-  # DSTbin1-3: fine mode, fully within PM2.5
-  # DSTbin4: straddles the 2.5 um cutoff; 54.6% of mass is PM2.5
+  # DSTbin1-2: fine mode, fully within PM2.5 and PM1
+  # DSTbin3: fully within PM2.5; PM1 fraction 0.073
+  # DSTbin4: straddles the 2.5 um cutoff; 54.6% of mass is PM2.5, excluded from PM1
   # DSTbin5-7: coarse mode, excluded from PM2.5
   DSTbin1:
     mw: 29.0

@@ -185,6 +185,17 @@ Not all dust size bins fall within the PM<sub>2.5</sub> diameter cutoff (2.5 μm
 - DSTbin4: Straddles the 2.5 μm cutoff; **54.6%** of mass is PM<sub>2.5</sub>
 - DSTbin5-7: Entirely coarse, excluded from PM<sub>2.5</sub>
 
+## PM<sub>1</sub> Size Cut for Dust
+
+`Dust_PM1` reports mineral-dust mass under the 1 μm cut. Each dust species carries a `dust_frac_pm1` fraction in `species_config.yaml`, applied the same way as the PM<sub>2.5</sub> `dust_frac`:
+
+- **DEAD scheme:** `DST1 × 0.06` (DST2 and coarser bins excluded)
+- **L23 scheme:** `DSTbin1 × 1.0 + DSTbin2 × 1.0 + DSTbin3 × 0.073` (DSTbin4 and coarser bins excluded)
+
+```python
+pm1_dust = calculator.calculate_mass('Dust_PM1')  # -> Dust_PM1
+```
+
 ## Optional Species
 
 Two species have debatable classification and are **excluded by default**. Their inclusion can be toggled via configuration flags:
