@@ -175,7 +175,7 @@ class AerosolCalculator:
 
     # --- Core calculation ---
 
-    def calculate_mass(self, spcs, dry=False) -> xr.Dataset:
+    def calculate_mass(self, spcs, dry=False, size_cut='PM25') -> xr.Dataset:
         """Calculate aerosol mass for one or more species/composites."""
         if isinstance(spcs, str):
             spcs = [spcs]
@@ -185,13 +185,13 @@ class AerosolCalculator:
             if hasattr(self, f'_calc_{spc}'):
                 mass = getattr(self, f'_calc_{spc}')(dry=dry)
             else:
-                mass = self._calc_single(spc, dry=dry)
+                mass = self._calc_single(spc, dry=dry, size_cut=size_cut)
 
             outds[PF_AERO + spc] = mass.assign_attrs(units='ug m-3')
 
         return outds
 
-    def _calc_single(self, spc: str, dry=False) -> xr.DataArray:
+    def _calc_single(self, spc: str, dry=False, size_cut='PM25') -> xr.DataArray:
         """Convert a single species from VMR to mass concentration."""
 
         attrs = self.active_species[spc]
@@ -213,22 +213,38 @@ class AerosolCalculator:
         if omoc is not None:
             mass *= omoc
 
-        # Dust PM2.5 fraction
-        dust_frac = attrs.get('dust_frac')
+        # Dust PM2.5 / PM1 fraction (size-cut dependent).
+        # null -> full bin (1.0); a number -> partial; 0.0 -> excluded.
+        frac_attr = 'dust_frac' if size_cut == 'PM25' else 'dust_frac_pm1'
+        dust_frac = attrs.get(frac_attr)
         if dust_frac is not None:
             mass *= dust_frac
 
         return mass
 
-    def _sum_components(self, components: list, dry=False) -> xr.DataArray:
+    def _sum_components(
+        self, components: list, dry=False, size_cut='PM25'
+    ) -> xr.DataArray:
         """Sum mass of multiple species/composites"""
-        summed = self.calculate_mass(components, dry=dry).to_array().sum(dim='variable')
+        summed = (
+            self.calculate_mass(components, dry=dry, size_cut=size_cut)
+            .to_array()
+            .sum(dim='variable')
+        )
         return summed
 
     # --- Composite species ---
 
     def _calc_Dust(self, dry=False):
         return self._sum_components(self.dust_species, dry=dry)
+
+    def _calc_Dust_PM1(self, dry=False):
+        """Mineral dust under the PM1 (1 um) size cut.
+
+        Uses each dust species' dust_frac_pm1 fraction. Works for both DEAD
+        (DST1 x0.06) and L23 (DSTbin1 + DSTbin2 + DSTbin3 x0.073) schemes.
+        """
+        return self._sum_components(self.dust_species, dry=dry, size_cut='PM1')
 
     def _calc_BC(self, dry=False):
         return self._sum_components(self.bc_species, dry=dry)

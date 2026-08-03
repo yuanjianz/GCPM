@@ -376,6 +376,7 @@ species:
     growth_group: null
     omoc: null
     dust_frac: null
+    dust_frac_pm1: 0.06
     scheme:
       dust_scheme: DEAD
     include_if: null
@@ -387,6 +388,7 @@ species:
     growth_group: null
     omoc: null
     dust_frac: 0.3
+    dust_frac_pm1: 0.0
     scheme:
       dust_scheme: DEAD
     include_if: null
@@ -402,6 +404,7 @@ species:
     growth_group: null
     omoc: null
     dust_frac: null
+    dust_frac_pm1: null
     scheme:
       dust_scheme: L23
     include_if: null
@@ -413,6 +416,7 @@ species:
     growth_group: null
     omoc: null
     dust_frac: null
+    dust_frac_pm1: null
     scheme:
       dust_scheme: L23
     include_if: null
@@ -424,6 +428,7 @@ species:
     growth_group: null
     omoc: null
     dust_frac: null
+    dust_frac_pm1: 0.073
     scheme:
       dust_scheme: L23
     include_if: null
@@ -435,6 +440,7 @@ species:
     growth_group: null
     omoc: null
     dust_frac: 0.546
+    dust_frac_pm1: 0.0
     scheme:
       dust_scheme: L23
     include_if: null
