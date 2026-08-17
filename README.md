@@ -12,7 +12,7 @@ pm25 = calculator.calculate_mass('PM25')  # total PM2.5 (wet)
 ```
 
 `calculate_mass` accepts a single name or a list, and returns an `xarray.Dataset`
-whose variables are prefixed `AeroMassFine_*` (units: μg/m<sup>3</sup>).
+whose variables are named after the requested species (units: μg/m<sup>3</sup>).
 
 ```python
 # Individual species and common groups
@@ -195,10 +195,12 @@ Two species have debatable classification and are **excluded by default**. Their
 GEOS-Chem can output `SpeciesConcALT1_*` fields, which represent species concentration at a given height (here 2M) calculated through dry deposition for **secondary aerosol species only** (SIA, SOA and SVPOA).
 > Reasons that only secondary aerosol is available are that primary aerosol can have an emission flux from the ground, whereas secondary aerosol better fulfilss the dry deposition model assumption.
 
-These are used transparently in the `SIA`, `SOA`, and (SVPOA) `POA` composites — and therefore in `PM25` — when `use_alt` is true:
+These are used transparently whenever `use_alt` is true — both for individual species (`calculate_mass('SO4')`) and for the `SIA`, `SOA`, and (SVPOA) `POA` composites, and therefore for `PM25`:
 
 - SIA, SOA, and SVPOA POA members read ALT1 fields where `alt1: true` in `species_config.yaml`
 - BC, Dust, Sea Salt, and NVPOA POA read standard `SpeciesConcVV_*` fields
+
+To get the plain `SpeciesConcVV_*` value of an ALT1-capable species, construct the calculator with `use_alt=False`.
 
 The `use_alt` parameter controls ALT1 usage:
 - `"auto"` (default): detect from dataset variables

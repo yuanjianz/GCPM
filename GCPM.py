@@ -16,7 +16,7 @@ DEFAULTS = _CONFIG['defaults']
 # --- Variable name prefixes ---
 PF_CONC = 'SpeciesConcVV_'
 PF_ALT = 'SpeciesConcALT1_'
-PF_AERO = 'AeroMassFine_'
+PF_AERO = ''
 PF_AOD = 'AOD'
 PF_AOD_HYG = 'AODHygWL1_'
 
@@ -193,15 +193,14 @@ class AerosolCalculator:
 
     def _calc_single(self, spc: str, dry=False) -> xr.DataArray:
         """Convert a single species from VMR to mass concentration."""
-        is_alt = spc.startswith('ALT1_')
-        base_spc = spc[5:] if is_alt else spc
-        pf = PF_ALT if is_alt else PF_CONC
 
-        attrs = self.active_species[base_spc]
+        attrs = self.active_species[spc]
+        is_alt = attrs.get('alt1')
+        pf = PF_ALT if is_alt else PF_CONC
 
         # Ideal gas law: VMR -> ug/m3
         P, R, T = self.std['P'], self.std['R'], self.std['T']
-        mass = self.ds[pf + base_spc] * P / R / T * attrs['mw'] * 1e6
+        mass = self.ds[pf + spc] * P / R / T * attrs['mw'] * 1e6
 
         # Hygroscopic growth (wet mode only)
         if not dry:
@@ -237,33 +236,21 @@ class AerosolCalculator:
     def _calc_SS(self, dry=False):
         return self._sum_components(self.ss_species, dry=dry)
 
-    def _mixed_alt1(self, species_list):
-        """Map a species list to dataset variable names, using ALT1_* where
-        the species is ALT1-capable and standard SpeciesConcVV_* otherwise.
-
-        Because _resolve_active_species zeros out alt1 when use_alt=False,
-        this helper transparently respects the use_alt configuration.
-        """
-        return [
-            ('ALT1_' + s) if self.active_species[s].get('alt1') else s
-            for s in species_list
-        ]
-
     def _calc_SIA(self, dry=False):
-        return self._sum_components(self._mixed_alt1(self.sia_species), dry=dry)
+        return self._sum_components(self.sia_species, dry=dry)
 
     def _calc_POA(self, dry=False):
-        return self._sum_components(self._mixed_alt1(self.poa_species), dry=dry)
+        return self._sum_components(self.poa_species, dry=dry)
 
     def _calc_SOA(self, dry=False):
-        return self._sum_components(self._mixed_alt1(self.soa_species), dry=dry)
+        return self._sum_components(self.soa_species, dry=dry)
 
     def _calc_PM25(self, dry=False):
         """PM2.5 at surface 2M using ALT1 diagnostic where available.
 
-        SIA, POA, and SOA composites transparently use ALT1 fields for their
-        ALT1-capable members (see _mixed_alt1). BC, Dust, and Sea Salt use
-        standard SpeciesConcVV fields.
+        Every species reads its own ALT1 field when its alt1 attribute is set
+        (see _calc_single); _resolve_active_species clears alt1 when use_alt is
+        False, so this transparently respects the use_alt configuration.
         """
         return self._sum_components(['SIA', 'POA', 'SOA', 'BC', 'Dust', 'SS'], dry=dry)
 
