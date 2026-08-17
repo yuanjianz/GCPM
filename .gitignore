@@ -1,0 +1,13 @@
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+
+# Tests are kept local, not tracked
+test_*.py
+tests/
+
+# Claude / superpowers working documents
+docs/superpowers/
+.claude/
+CLAUDE.md
