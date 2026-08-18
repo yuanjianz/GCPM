@@ -1,0 +1,22 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "GCPM"
+version = "0.1.0"
+description = "GEOS-Chem PM2.5 calculator: species VMR to component mass concentrations"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = ["xarray", "pyyaml"]
+
+[project.urls]
+Homepage = "https://github.com/yuanjianz/GCPM"
+
+[tool.setuptools]
+packages = ["GCPM"]
+
+# species_config.yaml is loaded relative to core.py at import time, so it must
+# travel with the package -- not sit beside it in the source tree.
+[tool.setuptools.package-data]
+GCPM = ["species_config.yaml"]

@@ -2,6 +2,16 @@
 
 GCPM calculates fine particulate matter (PM<sub>2.5</sub>) mass concentrations from GEOS-Chem chemical transport model output. It converts species volume mixing ratios (VMR) to mass concentrations in micrograms per cubic meter (μg/m<sup>3</sup>) and aggregates them into PM<sub>2.5</sub> components.
 
+## Installation
+
+```bash
+pip install -e .                                   # from a local clone
+pip install git+https://github.com/yuanjianz/GCPM  # or straight from GitHub
+```
+
+`species_config.yaml` ships inside the package, so the calculator works the
+same whether GCPM is installed editable, from a wheel, or from a git URL.
+
 ## Usage
 
 ```python
@@ -34,7 +44,7 @@ calculator = AerosolCalculator(
 
 ### species_config.yaml
 
-All species definitions, molecular weights, category assignments, scheme memberships, and default constants are stored in `species_config.yaml`. See the header comments in that file for the full attribute reference.
+All species definitions, molecular weights, category assignments, scheme memberships, and default constants are stored in `GCPM/species_config.yaml`, alongside the code that reads it. See the header comments in that file for the full attribute reference.
 
 ### AerosolCalculator Parameters
 
