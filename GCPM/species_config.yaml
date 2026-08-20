@@ -320,7 +320,7 @@ species:
   INDIOL:
     mw: 102.0
     category: SOA
-    growth_group: null
+    growth_group: ORG
     omoc: null
     dust_frac: null
     scheme:
