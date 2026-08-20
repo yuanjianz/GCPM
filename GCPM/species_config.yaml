@@ -23,7 +23,7 @@
 #                   SIA  -> 1.042 (default)
 #                   ORG  -> 1.011 (default)
 #                   SS   -> 1.17  (default)
-#                   null -> no growth factor applied (BC, Dust)
+#                   null -> no growth factor applied (BC, Dust, hydrophobic OCPO)
 #
 #   omoc:         Organic-matter-to-organic-carbon ratio. Applied to OA species
 #                 whose mass is reported as carbon mass. null if not applicable.
