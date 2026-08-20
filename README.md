@@ -93,7 +93,7 @@ Aerosol particles absorb water under ambient humidity conditions, increasing the
 | Group | Default Factor | Species |
 |-------|---------------|---------|
 | SIA   | 1.042         | NIT, SO4, NH4, (HMS) |
-| ORG   | 1.011         | All organic aerosol species |
+| ORG   | 1.011         | All organic aerosol species except hydrophobic OCPO |
 | SS    | 1.17          | SALA |
 
 > The hygroscopic growth factors here represent results from a recent laboratory study (Oxford et al., in prep), which are lower than previous values in Latimer et al., 2019.
