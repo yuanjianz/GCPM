@@ -94,7 +94,7 @@ Aerosol particles absorb water under ambient humidity conditions, increasing the
 |-------|---------------|---------|
 | SIA   | 1.042         | NIT, SO4, NH4, (HMS) |
 | ORG   | 1.011         | All organic aerosol species except hydrophobic OCPO |
-| SS    | 1.17          | SALA |
+| SS    | 1.17          | SALA (and SALC in PM<sub>10</sub>) |
 
 > The hygroscopic growth factors here represent results from a recent laboratory study (Oxford et al., in prep), which are lower than previous values in Latimer et al., 2019.
 
@@ -194,6 +194,22 @@ Not all dust size bins fall within the PM<sub>2.5</sub> diameter cutoff (2.5 μm
 
 ```python
 pm1_dust = calculator.calculate_mass('Dust_PM1')  # -> Dust_PM1
+```
+
+## PM<sub>10</sub>
+
+`PM10` is `PM25` with two substitutions and nothing else. SIA, OA and BC are taken as entirely below 2.5 μm, so they are identical in both:
+
+| Component | PM<sub>2.5</sub> (`Dust`, `SS`) | PM<sub>10</sub> (`Dust_PM10`, `SS_PM10`) |
+|---|---|---|
+| Dust (L23) | DSTbin1-3 + DSTbin4 × 0.546 | DSTbin1-6 + DSTbin7 × **0.156** |
+| Sea salt | SALA × SS growth | (SALA + **SALC**) × SS growth |
+
+SALC and DSTbin5-7 sit in their own categories (`SS_coarse`, `Dust_coarse`) so that no PM<sub>2.5</sub> or PM<sub>1</sub> composite ever reads them — `PM25` is unchanged, and still runs on output that lacks those fields. `Dust_PM10` raises `NotImplementedError` for the DEAD scheme: no PM<sub>10</sub> fractions are configured for DST1-4.
+
+```python
+out = calculator.calculate_mass(['PM25', 'PM10'])
+coarse_fraction = (out['PM10'] - out['PM25']) / out['PM10']
 ```
 
 ## Optional Species

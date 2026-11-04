@@ -18,6 +18,8 @@
 #                   BC    - Black Carbon
 #                   SS    - Sea Salt
 #                   Dust  - Mineral Dust
+#                   SS_coarse   - Coarse sea salt; enters PM10 only (SS_PM10)
+#                   Dust_coarse - Coarse dust bins; enter PM10 only (Dust_PM10)
 #
 #   growth_group: Which hygroscopic growth factor to apply (wet mode only).
 #                   SIA  -> 1.042 (default)
@@ -39,6 +41,11 @@
 #                 partial fraction; 0.0 = excluded from PM1.
 #                   DEAD: DST1 = 0.06 (DST2 excluded)
 #                   L23:  DSTbin1 = DSTbin2 = 1.0, DSTbin3 = 0.073 (DSTbin4 excluded)
+#
+#   dust_frac_pm10: Same as dust_frac but for the PM10 (10 um) size cut, used
+#                 by the Dust_PM10 composite. null = full bin (1.0).
+#                   L23:  DSTbin1-6 = 1.0, DSTbin7 = 0.156
+#                   DEAD: not defined -- Dust_PM10 raises for the DEAD scheme
 #
 #   scheme:       Which model configuration scheme this species belongs to.
 #                 Species with scheme=null are always included regardless of
@@ -66,6 +73,10 @@
 #   SS:   SALA
 #   Dust (DEAD): DST1, DST2
 #   Dust (L23):  DSTbin1, DSTbin2, DSTbin3, DSTbin4
+#
+#   PM10-only (never read by PM25 / Dust / SS / Dust_PM1):
+#   SS_coarse:   SALC
+#   Dust_coarse (L23): DSTbin5, DSTbin6, DSTbin7
 #
 # =============================================================================
 
@@ -372,6 +383,17 @@ species:
     include_if: null
     alt1: false
 
+  # Coarse-mode sea salt: PM10 only (SS_PM10), with the same SS growth factor.
+  SALC:
+    mw: 31.4
+    category: SS_coarse
+    growth_group: SS
+    omoc: null
+    dust_frac: null
+    scheme: null
+    include_if: null
+    alt1: false
+
   # ---- Dust (DEAD scheme: DST1-4) ----
   # DST1: fine mode; PM2.5 fraction 1.0, PM1 fraction 0.06
   # DST2: straddles the 2.5 um cutoff; 30% of mass is PM2.5, excluded from PM1
@@ -404,7 +426,8 @@ species:
   # DSTbin1-2: fine mode, fully within PM2.5 and PM1
   # DSTbin3: fully within PM2.5; PM1 fraction 0.073
   # DSTbin4: straddles the 2.5 um cutoff; 54.6% of mass is PM2.5, excluded from PM1
-  # DSTbin5-7: coarse mode, excluded from PM2.5
+  # DSTbin5-7: coarse mode, excluded from PM2.5 and PM1
+  # PM10 cut: DSTbin1-6 full (DSTbin4 included whole), DSTbin7 x 0.156
   DSTbin1:
     mw: 29.0
     category: Dust
@@ -412,6 +435,7 @@ species:
     omoc: null
     dust_frac: null
     dust_frac_pm1: null
+    dust_frac_pm10: null
     scheme:
       dust_scheme: L23
     include_if: null
@@ -424,6 +448,7 @@ species:
     omoc: null
     dust_frac: null
     dust_frac_pm1: null
+    dust_frac_pm10: null
     scheme:
       dust_scheme: L23
     include_if: null
@@ -436,6 +461,7 @@ species:
     omoc: null
     dust_frac: null
     dust_frac_pm1: 0.073
+    dust_frac_pm10: null
     scheme:
       dust_scheme: L23
     include_if: null
@@ -448,6 +474,48 @@ species:
     omoc: null
     dust_frac: 0.546
     dust_frac_pm1: 0.0
+    dust_frac_pm10: null
+    scheme:
+      dust_scheme: L23
+    include_if: null
+    alt1: false
+
+  # Coarse dust bins: category Dust_coarse, so only Dust_PM10 reads them.
+  DSTbin5:
+    mw: 29.0
+    category: Dust_coarse
+    growth_group: null
+    omoc: null
+    dust_frac: null
+    dust_frac_pm1: null
+    dust_frac_pm10: null
+    scheme:
+      dust_scheme: L23
+    include_if: null
+    alt1: false
+
+  DSTbin6:
+    mw: 29.0
+    category: Dust_coarse
+    growth_group: null
+    omoc: null
+    dust_frac: null
+    dust_frac_pm1: null
+    dust_frac_pm10: null
+    scheme:
+      dust_scheme: L23
+    include_if: null
+    alt1: false
+
+  # DSTbin7 straddles the 10 um cutoff; 15.6% of its mass is PM10.
+  DSTbin7:
+    mw: 29.0
+    category: Dust_coarse
+    growth_group: null
+    omoc: null
+    dust_frac: null
+    dust_frac_pm1: null
+    dust_frac_pm10: 0.156
     scheme:
       dust_scheme: L23
     include_if: null

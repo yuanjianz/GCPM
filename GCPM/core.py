@@ -20,6 +20,14 @@ PF_AERO = ''
 PF_AOD = 'AOD'
 PF_AOD_HYG = 'AODHygWL1_'
 
+# Which species attribute holds the dust mass fraction under each size cut.
+# A missing/null attribute means the full bin.
+_SIZE_CUT_ATTR = {
+    'PM1': 'dust_frac_pm1',
+    'PM25': 'dust_frac',
+    'PM10': 'dust_frac_pm10',
+}
+
 
 def _resolve_active_species(
     poa_scheme, soa_scheme, dust_scheme, use_alt, include_hms, include_indiol
@@ -129,6 +137,9 @@ class AerosolCalculator:
         self.bc_species = _in_category('BC')
         self.ss_species = _in_category('SS')
         self.dust_species = _in_category('Dust')
+        # PM10-only species: no PM2.5 composite reads these lists.
+        self.ss_coarse_species = _in_category('SS_coarse')
+        self.dust_coarse_species = _in_category('Dust_coarse')
 
     def _log(self, message):
         if self._verbose:
@@ -213,10 +224,9 @@ class AerosolCalculator:
         if omoc is not None:
             mass *= omoc
 
-        # Dust PM2.5 / PM1 fraction (size-cut dependent).
+        # Dust PM1 / PM2.5 / PM10 fraction (size-cut dependent).
         # null -> full bin (1.0); a number -> partial; 0.0 -> excluded.
-        frac_attr = 'dust_frac' if size_cut == 'PM25' else 'dust_frac_pm1'
-        dust_frac = attrs.get(frac_attr)
+        dust_frac = attrs.get(_SIZE_CUT_ATTR[size_cut])
         if dust_frac is not None:
             mass *= dust_frac
 
@@ -246,11 +256,31 @@ class AerosolCalculator:
         """
         return self._sum_components(self.dust_species, dry=dry, size_cut='PM1')
 
+    def _calc_Dust_PM10(self, dry=False):
+        """Mineral dust under the PM10 (10 um) size cut.
+
+        L23 only: DSTbin1-6 full + DSTbin7 x0.156 (each species'
+        dust_frac_pm10). DEAD bins carry no PM10 fraction, and summing only
+        the ones that exist would silently under-count PM10, so it raises.
+        """
+        if self.dust_scheme != 'L23':
+            raise NotImplementedError(
+                f'Dust_PM10 is defined for the L23 dust scheme only, '
+                f'not {self.dust_scheme}: no PM10 fractions are configured '
+                f'for its bins.')
+        return self._sum_components(
+            self.dust_species + self.dust_coarse_species, dry=dry, size_cut='PM10'
+        )
+
     def _calc_BC(self, dry=False):
         return self._sum_components(self.bc_species, dry=dry)
 
     def _calc_SS(self, dry=False):
         return self._sum_components(self.ss_species, dry=dry)
+
+    def _calc_SS_PM10(self, dry=False):
+        """Sea salt under the PM10 cut: SALA + SALC, both with the SS growth factor."""
+        return self._sum_components(self.ss_species + self.ss_coarse_species, dry=dry)
 
     def _calc_SIA(self, dry=False):
         return self._sum_components(self.sia_species, dry=dry)
@@ -269,6 +299,16 @@ class AerosolCalculator:
         False, so this transparently respects the use_alt configuration.
         """
         return self._sum_components(['SIA', 'POA', 'SOA', 'BC', 'Dust', 'SS'], dry=dry)
+
+    def _calc_PM10(self, dry=False):
+        """PM10: PM2.5 with dust and sea salt swapped for their PM10 cuts.
+
+        SIA, OA and BC are taken as entirely below 2.5 um, so the only
+        difference from PM25 is Dust -> Dust_PM10 and SS -> SS_PM10.
+        """
+        return self._sum_components(
+            ['SIA', 'POA', 'SOA', 'BC', 'Dust_PM10', 'SS_PM10'], dry=dry
+        )
 
 
 # --- Legacy API Wrappers ---
